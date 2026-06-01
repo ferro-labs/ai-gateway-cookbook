@@ -13,7 +13,7 @@
 services:
   gateway:
     # Pinned for reproducibility — bump deliberately, never track :latest.
-    image: ghcr.io/ferro-labs/ai-gateway:v1.1.1
+    image: ghcr.io/ferro-labs/ai-gateway:1.1.1
     environment:
       # Provider keys live on the gateway side. The gateway auto-detects
       # providers from these env vars (zero config needed for a demo).

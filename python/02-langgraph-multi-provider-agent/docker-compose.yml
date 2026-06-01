@@ -10,7 +10,7 @@
 
 services:
   gateway:
-    image: ghcr.io/ferro-labs/ai-gateway:v1.1.1
+    image: ghcr.io/ferro-labs/ai-gateway:1.1.1
     environment:
       # planner→OpenAI, coder→Anthropic, summarizer→Gemini. Default empty so the
       # file always parses (e.g. for the keyless `make test`); set them in .env
