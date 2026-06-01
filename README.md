@@ -38,23 +38,28 @@ Looking for raw Go gateway examples instead? Use [`ai-gateway-examples`](https:/
 
 ## Quickstart
 
-You need a running Ferro Labs AI Gateway and a gateway API key. Provider keys stay on the gateway side in the gateway runtime or gateway config; recipe `.env` files only contain recipe-facing settings such as `FERRO_BASE_URL` and `FERRO_API_KEY`.
+Each recipe is self-bootstrapping: `docker compose up` starts the Ferro Labs AI
+Gateway (its published image) **and** the recipe together, pre-wired. The only
+thing you supply is a `MASTER_KEY` and the provider keys that recipe needs.
 
 ```bash
 cd python/02-langgraph-multi-provider-agent
 cp .env.example .env
-# Edit .env: set FERRO_API_KEY and FERRO_BASE_URL if your gateway is not localhost.
+# Fill in MASTER_KEY + provider keys (OPENAI/ANTHROPIC/GEMINI for this recipe).
 
-make test   # mocked smoke test, no provider calls
-make run    # builds and runs the Dockerized recipe
+make test   # mocked smoke test — no gateway, no provider calls, no keys
+make run    # docker compose up: gateway + recipe, one command
 ```
+
+Provider keys are injected into the **gateway** container only — recipe code
+never sees them (it only knows `FERRO_BASE_URL` + `FERRO_API_KEY`).
 
 Gateway options:
 
 | Option | When to use | Setup |
 |---|---|---|
-| Local self-hosted gateway | OSS development and local demos | Run `ghcr.io/ferro-labs/ai-gateway:latest` or `ferrogw init && ferrogw run`. |
-| Remote gateway | Shared staging, FerroCloud, or team gateway | Set `FERRO_BASE_URL` in the recipe `.env`. |
+| Bundled gateway (default) | OSS development and local demos | `make run` / `docker compose up` — the recipe pulls the pinned `ghcr.io/ferro-labs/ai-gateway` image. |
+| Existing / remote gateway | Shared staging, FerroCloud, or team gateway | Set `FERRO_BASE_URL` to it and leave provider keys blank — it already holds them. |
 
 ---
 
@@ -121,11 +126,12 @@ Each recipe ships with the same file shape:
 | File | Purpose |
 |---|---|
 | `README.md` | What the recipe demonstrates, prerequisites, how to run, and what to look for. |
-| `Dockerfile` | Self-contained runtime image. |
-| `Makefile` | Standard `make run`, `make test`, `make build`, and `make clean` targets. |
-| `.env.example` | Every recipe-facing env var, with no provider secrets. |
+| `docker-compose.yml` | Starts the pinned gateway image + the recipe together (the one-command experience). |
+| `Dockerfile` | Self-contained recipe runtime image. |
+| `Makefile` | Standard `make run`, `make test`, `make down`, `make clean`, `make logs` targets. |
+| `.env.example` | Every env var: gateway-facing (`FERRO_BASE_URL`, `MASTER_KEY`) and the provider keys the bundled gateway needs. |
 | Source files | Small, focused implementation for the recipe. |
-| Tests | Mocked smoke tests that run without live provider calls. |
+| Tests | Mocked smoke tests that run without a gateway or live provider calls. |
 
 ---
 
@@ -133,9 +139,10 @@ Each recipe ships with the same file shape:
 
 Every recipe should satisfy these rules before it is published:
 
-- `make test` runs without provider calls and checks the important control flow.
-- `cp .env.example .env && make run` gets a user to a real request quickly.
-- Provider API keys stay in the gateway runtime or gateway config, never in recipe `.env` files.
+- `make test` runs without a gateway or provider calls and checks the important control flow.
+- `cp .env.example .env && make run` gets a user to a real request quickly (one command, gateway + recipe).
+- The recipe ships a `docker-compose.yml` that consumes the gateway's **pinned, published image** — never vendored gateway source.
+- Provider keys are injected into the **gateway** container only; recipe code reads just `FERRO_BASE_URL` + `FERRO_API_KEY`.
 - Direct runtime dependencies are pinned for reproducibility.
 - The recipe uses official Ferro SDK/framework adapters where they exist.
 - The README links back to the matching page in [`ferrolabs-docs`](https://github.com/ferro-labs/ferrolabs-docs).

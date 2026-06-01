@@ -23,25 +23,30 @@ A LangGraph agent where **each step routes to a different best-in-class provider
 
 ## Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/)
-- A running Ferro Labs AI Gateway at `FERRO_BASE_URL` (defaults to `http://localhost:8080`) with provider credentials configured for OpenAI, Anthropic, and Gemini.
-- A Ferro API key (`FERRO_API_KEY`).
+- [Docker](https://docs.docker.com/get-docker/) (Compose v2).
+- OpenAI, Anthropic, and Gemini API keys (the three nodes route to these providers).
+
+No separate gateway setup — `docker compose up` starts the Ferro gateway
+(published image) **and** this recipe together, pre-wired.
 
 ## How to run
 
 ```bash
 cp .env.example .env
-# Edit .env: set FERRO_API_KEY (and FERRO_BASE_URL if not localhost).
-# Provider keys stay on the gateway side, not in this recipe .env file.
+# Fill in MASTER_KEY and the three provider keys (OPENAI/ANTHROPIC/GEMINI).
+# Those keys go into the gateway container, never this recipe's container.
 
-make run
+make run     # docker compose up: gateway + recipe, one command
 ```
 
-Run the mocked smoke test without live provider calls:
+Run the mocked smoke test (no gateway, no provider calls, no keys):
 
 ```bash
 make test
 ```
+
+Already running a gateway? Point `FERRO_BASE_URL` at it and leave the provider
+keys blank — that gateway already holds them.
 
 Expected output (abridged):
 

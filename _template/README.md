@@ -12,19 +12,28 @@
 
 ## Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/)
-- A running Ferro Labs AI Gateway (`http://localhost:8080` by default — set `FERRO_BASE_URL` to point elsewhere).
+- [Docker](https://docs.docker.com/get-docker/) (Compose v2).
 - Provider API keys for: `<list providers — e.g., OpenAI, Anthropic, Gemini>`.
+
+No separate gateway setup: `docker compose up` starts the Ferro gateway
+(published image) **and** this recipe, pre-wired.
 
 ## How to run
 
 ```bash
 cp .env.example .env
-# Edit .env and fill in FERRO_API_KEY + FERRO_BASE_URL if not localhost.
-# Provider keys stay on the gateway side.
-make test
-make run
+# Fill in MASTER_KEY and the provider keys this recipe needs.
+make run     # docker compose up: starts gateway + recipe together
 ```
+
+Run the mocked smoke test (no gateway, no provider calls, no keys):
+
+```bash
+make test
+```
+
+Already have a gateway running? Point `FERRO_BASE_URL` at it and leave the
+provider keys blank — that gateway already holds them.
 
 Expected output: `<one or two lines describing what success looks like>`.
 

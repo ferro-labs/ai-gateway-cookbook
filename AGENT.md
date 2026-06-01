@@ -43,9 +43,10 @@ Every recipe directory MUST contain:
 | File              | Required | Notes                                                        |
 | ----------------- | -------- | ------------------------------------------------------------ |
 | `README.md`       | ✅       | Use the `_template/README.md` skeleton                       |
-| `Dockerfile`      | ✅       | Self-contained image. Multi-stage when it shortens runtime   |
-| `Makefile`        | ✅       | Must expose `run`, `test`, `build`, `clean` targets          |
-| `.env.example`    | ✅       | Every env var the recipe reads, with comments                |
+| `docker-compose.yml` | ✅    | Gateway (pinned published image) + recipe service. Copy from `_template/` |
+| `Dockerfile`      | ✅       | Self-contained recipe image. Multi-stage when it shortens runtime |
+| `Makefile`        | ✅       | Must expose `run`, `test`, `down`, `clean`, `logs` targets   |
+| `.env.example`    | ✅       | Every env var, with comments. Gateway-facing + provider keys |
 | Source files      | ✅       | Small, focused, heavily commented                            |
 | `requirements.txt` *(Python)* / `package.json` *(TS)* | ✅ | Pinned versions      |
 
@@ -59,12 +60,17 @@ Every recipe directory MUST contain:
 
 `make run` MUST:
 
-1. Build the Docker image (cached if unchanged).
-2. Load `.env` from the recipe directory.
-3. Run the recipe to completion (or until the user kills it for long-running demos).
-4. Exit non-zero on failure with a clear error message.
+1. `docker compose up --build` — start the bundled gateway (pinned published
+   image) and the recipe together, loading `.env` from the recipe directory.
+2. Wait for the gateway to be healthy before the recipe calls it
+   (`depends_on: condition: service_healthy`).
+3. Run the recipe to completion and exit with the recipe's exit code
+   (`--abort-on-container-exit --exit-code-from recipe`), or run until the user
+   kills it for long-running demos.
 
 The user has only done `cp .env.example .env` and filled values — nothing else.
+The gateway is **consumed as its published image**, never vendored as source;
+pin the image tag for reproducibility (same discipline as pinned deps).
 
 ### `make test` contract
 
@@ -74,12 +80,13 @@ reuse the recipe Docker image so dependency versions match `make run`.
 
 ### Env vars
 
-- All recipes default `FERRO_BASE_URL` to `http://localhost:8080`.
-- Recipe `.env` files include only recipe-side settings such as `FERRO_BASE_URL`,
-  `FERRO_API_KEY`, and recipe-specific toggles.
-- Provider API keys (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, etc.) stay on the
-  gateway side in the gateway runtime or gateway config — never in recipe `.env`
-  files and never hardcoded.
+- Under compose, the recipe reaches the gateway at `http://gateway:8080` (the
+  service name). `FERRO_API_KEY` equals the gateway's `MASTER_KEY`.
+- Provider API keys (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, etc.) are read from
+  `.env` and injected into the **gateway** container only — the recipe container
+  never receives them, and recipe **code** never reads them. Never hardcode keys.
+- If the user points `FERRO_BASE_URL` at an existing gateway instead of the
+  bundled one, the provider keys are left blank (that gateway already holds them).
 - New env vars MUST appear in `.env.example` with a one-line comment describing them.
 
 ### `trace_id` surfacing

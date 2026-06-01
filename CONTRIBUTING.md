@@ -32,7 +32,7 @@ Thanks for adding a recipe — that's the single highest-leverage way to grow Fe
 - **Two minutes to first response.** If `make run` doesn't print useful output within two minutes of cloning, rework it.
 - **Real provider routing.** Recipes prove Ferro's value — multi-provider, fallback, cost routing, tracing. Don't ship a recipe that could run against raw OpenAI unchanged.
 - **`trace_id` everywhere.** Surface the Ferro trace ID anywhere the framework exposes response metadata. This is the join key for the v1.2 observability bridges.
-- **No provider secrets in recipe `.env`.** Provider API keys belong in the gateway runtime or gateway config. Recipes only need gateway-facing settings such as `FERRO_BASE_URL` and `FERRO_API_KEY`.
+- **Recipe code never reads provider keys.** A recipe knows only `FERRO_BASE_URL` and `FERRO_API_KEY`. When `docker compose up` starts the bundled gateway, provider keys from `.env` are injected into the **gateway** container, never the recipe container. Never hardcode keys, and never commit a real `.env`.
 - **A screencast GIF** at the top of the README (60 seconds max) closes the loop visually.
 
 ## PR process
