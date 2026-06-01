@@ -1,0 +1,157 @@
+# AGENT.md — AI Coding Agent Guide for ai-gateway-cookbook
+
+This document gives AI coding agents the conventions for adding and maintaining recipes in the [Ferro Labs AI Gateway](https://github.com/ferro-labs/ai-gateway) cookbook.
+
+---
+
+## Project Overview
+
+This repo holds **runnable, copy-pasteable recipes** showing how to use Ferro Labs AI Gateway with popular LLM frameworks (LangChain, LangGraph, LlamaIndex, CrewAI, Vercel AI SDK, Mastra, DSPy, …) and use cases (RAG, evals, guardrails, multi-provider routing).
+
+- **Audience:** developers evaluating or already using Ferro who want a working starting point.
+- **Promise:** every recipe runs in two minutes via `cp .env.example .env && make run`.
+- **Scope:** Python + TypeScript. Go recipes link out to [`ai-gateway-examples`](https://github.com/ferro-labs/ai-gateway-examples).
+
+---
+
+## Repository Structure
+
+```
+ai-gateway-cookbook/
+├── README.md                # Index of all recipes
+├── AGENT.md                 # This file
+├── CONTRIBUTING.md          # Human-facing contribution guide
+├── LICENSE                  # Apache-2.0
+├── _template/               # Recipe scaffold — copy this when adding a recipe
+│   ├── README.md
+│   ├── Dockerfile
+│   ├── Makefile
+│   ├── .env.example
+│   └── recipe.py            # or recipe.ts — placeholder source
+├── python/
+│   └── <NN>-<slug>/         # Each recipe is a self-contained directory
+└── typescript/
+    └── <NN>-<slug>/
+```
+
+---
+
+## Recipe Conventions
+
+Every recipe directory MUST contain:
+
+| File              | Required | Notes                                                        |
+| ----------------- | -------- | ------------------------------------------------------------ |
+| `README.md`       | ✅       | Use the `_template/README.md` skeleton                       |
+| `Dockerfile`      | ✅       | Self-contained image. Multi-stage when it shortens runtime   |
+| `Makefile`        | ✅       | Must expose `run`, `test`, `build`, `clean` targets          |
+| `.env.example`    | ✅       | Every env var the recipe reads, with comments                |
+| Source files      | ✅       | Small, focused, heavily commented                            |
+| `requirements.txt` *(Python)* / `package.json` *(TS)* | ✅ | Pinned versions      |
+
+### Naming
+
+- Directory: `<NN>-<slug>` where `NN` is a two-digit ordinal **within the language folder** (e.g., `python/02-langgraph-multi-provider-agent`).
+- `<slug>` is kebab-case, describes the recipe in 3–5 words.
+- Numbering is not reserved globally — Python `02` and TypeScript `02` are independent.
+
+### `make run` contract
+
+`make run` MUST:
+
+1. Build the Docker image (cached if unchanged).
+2. Load `.env` from the recipe directory.
+3. Run the recipe to completion (or until the user kills it for long-running demos).
+4. Exit non-zero on failure with a clear error message.
+
+The user has only done `cp .env.example .env` and filled values — nothing else.
+
+### `make test` contract
+
+`make test` MUST run without live provider calls. Use mocked framework/model clients
+to verify the recipe control flow, metadata surfacing, and output shape. It may
+reuse the recipe Docker image so dependency versions match `make run`.
+
+### Env vars
+
+- All recipes default `FERRO_BASE_URL` to `http://localhost:8080`.
+- Recipe `.env` files include only recipe-side settings such as `FERRO_BASE_URL`,
+  `FERRO_API_KEY`, and recipe-specific toggles.
+- Provider API keys (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, etc.) stay on the
+  gateway side in the gateway runtime or gateway config — never in recipe `.env`
+  files and never hardcoded.
+- New env vars MUST appear in `.env.example` with a one-line comment describing them.
+
+### `trace_id` surfacing
+
+Recipes that demonstrate observability MUST surface the Ferro `trace_id` (returned in the `x-trace-id` response header, frozen in v1.1.0). For LangChain-style recipes, this means inspecting `response_metadata["trace_id"]`. This is the join key for any downstream observability bridge (LangSmith, Langfuse, Phoenix).
+
+---
+
+## Adding a New Recipe (step-by-step)
+
+1. **Pick a number.** Use the next free `NN` in the target language folder.
+2. **Copy the template.**
+   ```bash
+   cp -r _template python/<NN>-<slug>
+   ```
+3. **Edit `README.md`** — fill in: title, what it demonstrates, prerequisites, how to run, what to look for, docs link, related recipes.
+4. **Edit `.env.example`** — declare every env var the recipe reads.
+5. **Edit `Dockerfile`** — use the language's official slim base image. Pin dependencies.
+6. **Edit `Makefile`** — usually only the image tag changes from the template.
+7. **Write the recipe source.** Smallest possible code that shows the Ferro feature. Comment liberally.
+8. **Verify tests and the end-to-end run** from a fresh clone:
+   ```bash
+   git clean -fdx <recipe-dir>
+   make test
+   cp .env.example .env && # fill values
+   make run
+   ```
+9. **Update the root `README.md`** — add a row to the recipes table for the new recipe.
+10. **Link from `ferrolabs-docs`** — open a PR in `ferrolabs-docs` adding a link from the relevant `docs/frameworks/*.mdx` page.
+
+---
+
+## Code Style
+
+### Python recipes
+
+- Python 3.10+ syntax. Type hints on every public function.
+- `ruff format` + `ruff check` clean. Line length 100.
+- Pin dependencies in `requirements.txt`.
+- Use exact versions for direct runtime dependencies.
+- Use the official integration package where it exists (`langchain-ferrolabsai`, `llama-index-llms-ferrolabsai`) — do not re-implement adapters inside a recipe.
+
+### TypeScript recipes
+
+- Node 18+ / TypeScript 5+.
+- ESM by default. Use `tsx` for `make run`.
+- Pin dependencies in `package.json`. Prefer exact versions for recipe reproducibility.
+- Use `@ferro-labs-ai/sdk` (and `@ferro-labs-ai/sdk/langchain` when shipped).
+
+### Documentation style
+
+- READMEs are scannable. Lead with what the recipe does and how to run it. Explanation comes after.
+- Code blocks specify language for syntax highlighting.
+- Outbound links use absolute URLs.
+
+---
+
+## Common Pitfalls
+
+- **Do not commit `.env`.** Only `.env.example` is checked in. `.gitignore` already blocks `.env`.
+- **Do not hardcode API keys**, even fake ones, in source files or fixtures.
+- **Do not assume the gateway is running on `localhost`.** Always read `FERRO_BASE_URL`.
+- **Do not pull in heavy framework dependencies** in a recipe that only needs one feature — keep the dependency graph minimal.
+- **Do not number recipes globally.** Each language folder has its own `NN` sequence.
+- **Do not embed LangSmith / Langfuse / observability vendor SDKs in a recipe.** Observability is the gateway's job via the v1.2 plugin bridges; recipes surface `trace_id` and stop there.
+
+---
+
+## Related Repositories
+
+- [`ai-gateway`](https://github.com/ferro-labs/ai-gateway) — the gateway (Go core, v1.1.0 OTel-native)
+- [`ai-gateway-examples`](https://github.com/ferro-labs/ai-gateway-examples) — raw Go examples
+- [`ferrolabs-python-sdk`](https://github.com/ferro-labs/ferrolabs-python-sdk) — Python SDK + `integrations/` framework adapters
+- [`ferrolabs-typescript-sdk`](https://github.com/ferro-labs/ferrolabs-typescript-sdk) — TypeScript SDK
+- [`ferrolabs-docs`](https://github.com/ferro-labs/ferrolabs-docs) — documentation site, including `frameworks/` pages each recipe should link from

@@ -1,0 +1,4 @@
+# Pinned for recipe reproducibility.
+langchain-ferrolabsai==0.1.0
+langgraph==0.2.76
+langchain-core==0.3.86

@@ -1,0 +1,2 @@
+# Pin dependencies for reproducibility. Replace versions per recipe needs.
+ferrolabsai==0.2.0
