@@ -69,8 +69,9 @@ Every recipe directory MUST contain:
    kills it for long-running demos.
 
 The user has only done `cp .env.example .env` and filled values — nothing else.
-The gateway is **consumed as its published image**, never vendored as source;
-pin the image tag for reproducibility (same discipline as pinned deps).
+The gateway is **consumed as its published image**, never vendored as source.
+The image tag defaults to `latest` and is overridable via `GATEWAY_VERSION`
+(set it to pin a specific release for reproducibility).
 
 ### `make test` contract
 

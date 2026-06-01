@@ -58,7 +58,7 @@ Gateway options:
 
 | Option | When to use | Setup |
 |---|---|---|
-| Bundled gateway (default) | OSS development and local demos | `make run` / `docker compose up` — the recipe pulls the pinned `ghcr.io/ferro-labs/ai-gateway` image. |
+| Bundled gateway (default) | OSS development and local demos | `make run` / `docker compose up` — the recipe pulls `ghcr.io/ferro-labs/ai-gateway:latest` (set `GATEWAY_VERSION` to pin a release). |
 | Existing / remote gateway | Shared staging, FerroCloud, or team gateway | Set `FERRO_BASE_URL` to it and leave provider keys blank — it already holds them. |
 
 ---
@@ -141,7 +141,7 @@ Every recipe should satisfy these rules before it is published:
 
 - `make test` runs without a gateway or provider calls and checks the important control flow.
 - `cp .env.example .env && make run` gets a user to a real request quickly (one command, gateway + recipe).
-- The recipe ships a `docker-compose.yml` that consumes the gateway's **pinned, published image** — never vendored gateway source.
+- The recipe ships a `docker-compose.yml` that consumes the gateway's **published image** (defaults to `latest`; pin via `GATEWAY_VERSION`) — never vendored gateway source.
 - Provider keys are injected into the **gateway** container only; recipe code reads just `FERRO_BASE_URL` + `FERRO_API_KEY`.
 - Direct runtime dependencies are pinned for reproducibility.
 - The recipe uses official Ferro SDK/framework adapters where they exist.
