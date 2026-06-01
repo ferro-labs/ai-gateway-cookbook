@@ -1,0 +1,41 @@
+# One command, both boxes: this brings up the Ferro gateway AND the recipe,
+# pre-wired, so a reader goes from `clone` to "it works" with no separate
+# gateway setup.
+#
+#   cp .env.example .env   # fill in provider keys + MASTER_KEY
+#   docker compose up
+#
+# The gateway is consumed as its PUBLISHED, PINNED image — the cookbook never
+# vendors gateway source. Provider keys are injected into the *gateway*
+# container only; the recipe container never sees them (it only knows
+# FERRO_BASE_URL + FERRO_API_KEY).
+
+services:
+  gateway:
+    # Defaults to the newest gateway. Pin a release for reproducibility with
+    # GATEWAY_VERSION (e.g. GATEWAY_VERSION=1.1.1 in .env or inline).
+    image: ghcr.io/ferro-labs/ai-gateway:${GATEWAY_VERSION:-latest}
+    environment:
+      # Provider keys live on the gateway side. The gateway auto-detects
+      # providers from these env vars (zero config needed for a demo).
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      # The gateway's master key == the recipe's FERRO_API_KEY.
+      MASTER_KEY: ${MASTER_KEY:-}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+
+  recipe:
+    build: .
+    depends_on:
+      gateway:
+        condition: service_healthy
+    environment:
+      # Inside the compose network the gateway is reachable by service name.
+      FERRO_BASE_URL: http://gateway:8080
+      FERRO_API_KEY: ${MASTER_KEY}

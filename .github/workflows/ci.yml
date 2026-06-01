@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Line length 100 matches the standard documented in AGENT.md.
+      - name: Install ruff
+        run: pip install ruff==0.15.10
+
+      - name: ruff check
+        run: ruff check --line-length 100 python/ _template/
+
+      - name: ruff format --check
+        run: ruff format --check --line-length 100 python/ _template/
+
+  recipes:
+    name: Recipe smoke tests (make test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ubuntu-latest ships Docker, which `make test` uses to build each recipe
+      # image and run its mocked smoke test (no live provider calls).
+      - name: Run `make test` for every recipe
+        run: |
+          shopt -s nullglob
+          failed=0
+          ran=0
+          for mk in python/*/Makefile typescript/*/Makefile; do
+            dir="$(dirname "$mk")"
+            ran=$((ran + 1))
+            echo "::group::make test — $dir"
+            if make -C "$dir" test; then
+              echo "PASS: $dir"
+            else
+              echo "::error file=$mk::make test failed in $dir"
+              failed=1
+            fi
+            echo "::endgroup::"
+          done
+          echo "Ran make test for $ran recipe(s)."
+          exit $failed

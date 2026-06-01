@@ -1,0 +1,9 @@
+# Never bake secrets or local cruft into the recipe image.
+.env
+.env.*
+__pycache__/
+*.pyc
+.ruff_cache/
+.venv/
+.git/
+docker-compose.yml
