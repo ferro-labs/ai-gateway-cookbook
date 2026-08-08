@@ -20,6 +20,8 @@ The official cookbook for [Ferro Labs AI Gateway](https://github.com/ferro-labs/
 
 Use this repo when you want a working example, not just an API snippet. Each recipe is self-contained, Dockerized, and shaped around a real integration such as LangGraph, LangChain, LlamaIndex, CrewAI, Vercel AI SDK, Mastra, DSPy, evals, or guardrails.
 
+Recipes are validated against **ai-gateway v1.4.1**, `ferrolabsai` 0.2.1, `langchain-ferrolabsai` 0.1.0, and `@ferro-labs-ai/sdk` 0.2.0. `make run` pulls the gateway's `latest` tag by default so an evaluation sees the newest release — set `GATEWAY_VERSION=1.4.1` to reproduce the validated stack exactly.
+
 ---
 
 ## What This Is For
@@ -29,7 +31,7 @@ Use this repo when you want a working example, not just an API snippet. Each rec
 | Evaluate Ferro quickly | Run a complete recipe with `cp .env.example .env && make run`. |
 | Adopt a framework | See the exact LangChain, LangGraph, LlamaIndex, CrewAI, Vercel AI SDK, or Mastra wiring. |
 | Prove multi-provider routing | Route different model calls through one `FERRO_BASE_URL` without provider SDKs in app code. |
-| Correlate requests | Print Ferro `trace_id` values so gateway logs, OTel traces, and future observability bridges share a join key. |
+| Correlate requests | Print Ferro `trace_id` values so gateway logs, OTel traces, and the `langsmith` / `langfuse` / `phoenix` observability plugins share a join key. |
 | Build a new demo | Copy `_template/` and follow the same `README.md`, `Dockerfile`, `.env.example`, and `Makefile` contract. |
 
 Looking for raw Go gateway examples instead? Use [`ai-gateway-examples`](https://github.com/ferro-labs/ai-gateway-examples). This cookbook is for framework and application recipes.
@@ -71,11 +73,11 @@ It builds a three-node LangGraph agent:
 
 | Step | Model | Provider role | What it proves |
 |---|---|---|---|
-| Planner | `gpt-4o` | OpenAI reasoning | One graph can call an OpenAI model through Ferro. |
-| Coder | `claude-3-5-sonnet-20241022` | Anthropic code quality | The next graph node can switch providers with only the model name changed. |
-| Summarizer | `gemini-1.5-flash` | Google fast summary | Cheap/fast tasks can route to a different provider through the same endpoint. |
+| Planner | `gpt-5.2` | OpenAI reasoning | One graph can call an OpenAI model through Ferro. |
+| Coder | `claude-sonnet-4-6` | Anthropic code quality | The next graph node can switch providers with only the model name changed. |
+| Summarizer | `gemini-2.5-flash` | Google fast summary | Cheap/fast tasks can route to a different provider through the same endpoint. |
 
-The app prints one Ferro `trace_id` per node. Those IDs are the join key for request logs, OpenTelemetry traces, and v1.2 observability bridge plugins such as LangSmith, Langfuse, and Phoenix.
+The app prints one Ferro `trace_id` per node. Those IDs are the join key for request logs, OpenTelemetry traces, and observability bridge plugins such as LangSmith, Langfuse, and Phoenix.
 
 ---
 
@@ -85,7 +87,7 @@ The app prints one Ferro `trace_id` per node. Those IDs are the join key for req
 
 | Status | Recipe | Frameworks | Demonstrates |
 |---|---|---|---|
-| Live | [`02-langgraph-multi-provider-agent`](python/02-langgraph-multi-provider-agent/) | LangGraph + `langchain-ferrolabsai` | Planner=gpt-4o, coder=claude, summarizer=gemini in one agent. |
+| Live | [`02-langgraph-multi-provider-agent`](python/02-langgraph-multi-provider-agent/) | LangGraph + `langchain-ferrolabsai` | Planner=gpt-5.2, coder=claude, summarizer=gemini in one agent. |
 | Planned | `01-langchain-fallback-chain` | LangChain | Provider fallback through Ferro. |
 | Planned | `03-rag-with-cost-routing` | LangChain + pgvector | Cheap-then-smart routing for RAG. |
 | Planned | `04-langsmith-tracing` | LangChain + LangSmith | Ferro `trace_id` to LangSmith run linkage. |
@@ -126,7 +128,7 @@ Each recipe ships with the same file shape:
 | File | Purpose |
 |---|---|
 | `README.md` | What the recipe demonstrates, prerequisites, how to run, and what to look for. |
-| `docker-compose.yml` | Starts the pinned gateway image + the recipe together (the one-command experience). |
+| `docker-compose.yml` | Starts the published gateway image + the recipe together (the one-command experience). |
 | `Dockerfile` | Self-contained recipe runtime image. |
 | `Makefile` | Standard `make run`, `make test`, `make down`, `make clean`, `make logs` targets. |
 | `.env.example` | Every env var: gateway-facing (`FERRO_BASE_URL`, `MASTER_KEY`) and the provider keys the bundled gateway needs. |

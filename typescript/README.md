@@ -5,13 +5,13 @@ TypeScript / Node recipes that pair Ferro Labs AI Gateway with popular JS/TS LLM
 All recipes:
 
 - Use [`@ferro-labs-ai/sdk`](https://www.npmjs.com/package/@ferro-labs-ai/sdk) as the SDK base.
-- Will use `@ferro-labs-ai/sdk/langchain` once shipped.
+- Use the `@ferro-labs-ai/sdk/langchain` subpath export for LangChain.js recipes (shipped in SDK 0.2.0).
 - Run via `cp .env.example .env && make run` (Docker-based; `tsx` inside the image).
 
 | Recipe | Frameworks | Status |
 |---|---|---|
 | `01-vercel-ai-sdk-fallback` | Vercel AI SDK | Planned |
-| `02-langchainjs-streaming-agent` | LangChain.js | Planned — needs `@ferro-labs-ai/sdk/langchain` |
+| `02-langchainjs-streaming-agent` | LangChain.js | Planned |
 | `03-mastra-workflow` | Mastra | Planned |
 | `04-nextjs-chat-with-budget-plugin` | Next.js | Planned |
 

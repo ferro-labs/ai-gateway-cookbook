@@ -8,8 +8,12 @@ Examples there cover:
 
 - `basic` — single chat-completion request
 - `streaming` — real-time token output
+- `embeddings` — embedding requests through the gateway
 - `fallback` — automatic provider fallback
 - `loadbalance` — weighted load-balancing
+- `conditional-routing` — route on request metadata
+- `caching` — response caching
+- `config-file` — drive the gateway from `config.yaml`
 - `embedded` — mount the gateway inside your own `net/http` server
 - `custom-plugin` — write and register a plugin
 - `with-circuit-breaker`, `with-guardrails`, `with-hooks`, `with-mcp`

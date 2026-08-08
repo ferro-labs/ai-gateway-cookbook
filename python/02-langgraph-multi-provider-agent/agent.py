@@ -5,20 +5,21 @@ Pipeline:
     user request
         │
         ▼
-    planner   →  gpt-4o            (OpenAI — strong reasoning)
+    planner    →  gpt-5.2           (OpenAI — strong reasoning)
         │
         ▼
-    coder     →  claude-3-5-sonnet (Anthropic — code quality)
+    coder      →  claude-sonnet-4-6 (Anthropic — code quality)
         │
         ▼
-    summarizer → gemini-1.5-flash  (Google — cheap, fast)
+    summarizer →  gemini-2.5-flash  (Google — cheap, fast)
         │
         ▼
       result
 
-Every step prints its Ferro ``trace_id`` (propagated as the ``x-trace-id``
-response header — frozen contract since ``ai-gateway v1.1.0``). Those IDs are
-the join key for any v1.2 observability bridge plugin (LangSmith, Langfuse,
+Every step prints its Ferro ``trace_id`` — the gateway's request id, returned
+in the ``X-Request-ID`` response header and surfaced by
+``langchain-ferrolabsai`` as ``response_metadata["trace_id"]``. Those IDs are
+the join key for any observability bridge plugin (LangSmith, Langfuse,
 Phoenix, …).
 """
 
@@ -62,9 +63,9 @@ def _make_chat(model: str) -> FerroChatModel:
     )
 
 
-PLANNER = _make_chat("gpt-4o")
-CODER = _make_chat("claude-3-5-sonnet-20241022")
-SUMMARIZER = _make_chat("gemini-1.5-flash")
+PLANNER = _make_chat("gpt-5.2")
+CODER = _make_chat("claude-sonnet-4-6")
+SUMMARIZER = _make_chat("gemini-2.5-flash")
 
 
 # ---------------------------------------------------------------------------
@@ -173,11 +174,11 @@ def main() -> int:
     app = build_graph()
     final = app.invoke({"request": request, "plan": "", "code": "", "summary": "", "trace_ids": []})
 
-    print("\n--- Plan (gpt-4o) ---")
+    print("\n--- Plan (gpt-5.2) ---")
     print(final["plan"])
-    print("\n--- Code (claude-3-5-sonnet) ---")
+    print("\n--- Code (claude-sonnet-4-6) ---")
     print(final["code"])
-    print("\n--- Summary (gemini-1.5-flash) ---")
+    print("\n--- Summary (gemini-2.5-flash) ---")
     print(final["summary"])
     print("\n--- Ferro trace IDs (join key for any observability bridge) ---")
     for step, tid in zip(["plan", "code", "summary"], final["trace_ids"], strict=True):

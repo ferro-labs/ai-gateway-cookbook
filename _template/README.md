@@ -39,8 +39,8 @@ Expected output: `<one or two lines describing what success looks like>`.
 
 ## What to look for
 
-- `trace_id` printed alongside each response — that's the Ferro request ID, propagated as the `x-trace-id` header (frozen contract since `ai-gateway v1.1.0`).
-- `<feature-specific signal>` — e.g., "Notice the planner step routed to gpt-4o, the coder step routed to claude-3-5-sonnet".
+- `trace_id` printed alongside each response — that's the Ferro request ID, propagated as the `X-Request-ID` header.
+- `<feature-specific signal>` — e.g., "Notice the planner step routed to gpt-5.2, the coder step routed to claude-sonnet-4-6".
 
 ## How it works
 

@@ -43,7 +43,7 @@ Every recipe directory MUST contain:
 | File              | Required | Notes                                                        |
 | ----------------- | -------- | ------------------------------------------------------------ |
 | `README.md`       | ✅       | Use the `_template/README.md` skeleton                       |
-| `docker-compose.yml` | ✅    | Gateway (pinned published image) + recipe service. Copy from `_template/` |
+| `docker-compose.yml` | ✅    | Gateway (published image, `latest` by default, pinnable via `GATEWAY_VERSION`) + recipe service. Copy from `_template/` |
 | `Dockerfile`      | ✅       | Self-contained recipe image. Multi-stage when it shortens runtime |
 | `Makefile`        | ✅       | Must expose `run`, `test`, `down`, `clean`, `logs` targets   |
 | `.env.example`    | ✅       | Every env var, with comments. Gateway-facing + provider keys |
@@ -60,8 +60,9 @@ Every recipe directory MUST contain:
 
 `make run` MUST:
 
-1. `docker compose up --build` — start the bundled gateway (pinned published
-   image) and the recipe together, loading `.env` from the recipe directory.
+1. `docker compose up --build` — start the bundled gateway (published image,
+   `latest` unless `GATEWAY_VERSION` pins it) and the recipe together, loading
+   `.env` from the recipe directory.
 2. Wait for the gateway to be healthy before the recipe calls it
    (`depends_on: condition: service_healthy`).
 3. Run the recipe to completion and exit with the recipe's exit code
@@ -92,7 +93,7 @@ reuse the recipe Docker image so dependency versions match `make run`.
 
 ### `trace_id` surfacing
 
-Recipes that demonstrate observability MUST surface the Ferro `trace_id` (returned in the `x-trace-id` response header, frozen in v1.1.0). For LangChain-style recipes, this means inspecting `response_metadata["trace_id"]`. This is the join key for any downstream observability bridge (LangSmith, Langfuse, Phoenix).
+Recipes that demonstrate observability MUST surface the Ferro `trace_id` (returned in the `X-Request-ID` response header). For LangChain-style recipes, this means inspecting `response_metadata["trace_id"]`. This is the join key for any downstream observability bridge (LangSmith, Langfuse, Phoenix).
 
 ---
 
@@ -135,7 +136,7 @@ Recipes that demonstrate observability MUST surface the Ferro `trace_id` (return
 - Node 18+ / TypeScript 5+.
 - ESM by default. Use `tsx` for `make run`.
 - Pin dependencies in `package.json`. Prefer exact versions for recipe reproducibility.
-- Use `@ferro-labs-ai/sdk` (and `@ferro-labs-ai/sdk/langchain` when shipped).
+- Use `@ferro-labs-ai/sdk`, and its `@ferro-labs-ai/sdk/langchain` subpath export for LangChain.js recipes (shipped in 0.2.0).
 
 ### Documentation style
 
@@ -152,13 +153,13 @@ Recipes that demonstrate observability MUST surface the Ferro `trace_id` (return
 - **Do not assume the gateway is running on `localhost`.** Always read `FERRO_BASE_URL`.
 - **Do not pull in heavy framework dependencies** in a recipe that only needs one feature — keep the dependency graph minimal.
 - **Do not number recipes globally.** Each language folder has its own `NN` sequence.
-- **Do not embed LangSmith / Langfuse / observability vendor SDKs in a recipe.** Observability is the gateway's job via the v1.2 plugin bridges; recipes surface `trace_id` and stop there.
+- **Do not embed LangSmith / Langfuse / observability vendor SDKs in a recipe.** Observability is the gateway's job via its observability plugins (`langsmith`, `langfuse`, `phoenix`); recipes surface `trace_id` and stop there.
 
 ---
 
 ## Related Repositories
 
-- [`ai-gateway`](https://github.com/ferro-labs/ai-gateway) — the gateway (Go core, v1.1.0 OTel-native)
+- [`ai-gateway`](https://github.com/ferro-labs/ai-gateway) — the gateway (Go core, OTel-native, v1.4.x)
 - [`ai-gateway-examples`](https://github.com/ferro-labs/ai-gateway-examples) — raw Go examples
 - [`ferrolabs-python-sdk`](https://github.com/ferro-labs/ferrolabs-python-sdk) — Python SDK + `integrations/` framework adapters
 - [`ferrolabs-typescript-sdk`](https://github.com/ferro-labs/ferrolabs-typescript-sdk) — TypeScript SDK
