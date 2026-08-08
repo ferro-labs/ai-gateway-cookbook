@@ -28,14 +28,15 @@ def main() -> int:
     client = FerroClient(api_key=api_key, base_url=base_url)
 
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-5-mini",
         messages=[{"role": "user", "content": "Say hello from the Ferro cookbook."}],
     )
 
     print(response.choices[0].message.content)
-    # `trace_id` is propagated by the gateway via the `x-trace-id` response header
-    # (frozen contract since ai-gateway v1.1.0). Surface it so users can correlate
-    # this call across logs, OTel traces, and any observability bridge plugin.
+    # The gateway returns its request/trace id in the `X-Request-ID` response
+    # header and the SDK exposes it as `trace_id`. Surface it so users can
+    # correlate this call across logs, OTel traces, and any observability
+    # bridge plugin (langsmith, langfuse, phoenix).
     print(f"trace_id={getattr(response, 'trace_id', None)}")
     return 0
 

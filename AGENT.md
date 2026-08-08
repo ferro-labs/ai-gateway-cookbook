@@ -92,7 +92,7 @@ reuse the recipe Docker image so dependency versions match `make run`.
 
 ### `trace_id` surfacing
 
-Recipes that demonstrate observability MUST surface the Ferro `trace_id` (returned in the `x-trace-id` response header, frozen in v1.1.0). For LangChain-style recipes, this means inspecting `response_metadata["trace_id"]`. This is the join key for any downstream observability bridge (LangSmith, Langfuse, Phoenix).
+Recipes that demonstrate observability MUST surface the Ferro `trace_id` (returned in the `X-Request-ID` response header). For LangChain-style recipes, this means inspecting `response_metadata["trace_id"]`. This is the join key for any downstream observability bridge (LangSmith, Langfuse, Phoenix).
 
 ---
 
@@ -152,13 +152,13 @@ Recipes that demonstrate observability MUST surface the Ferro `trace_id` (return
 - **Do not assume the gateway is running on `localhost`.** Always read `FERRO_BASE_URL`.
 - **Do not pull in heavy framework dependencies** in a recipe that only needs one feature — keep the dependency graph minimal.
 - **Do not number recipes globally.** Each language folder has its own `NN` sequence.
-- **Do not embed LangSmith / Langfuse / observability vendor SDKs in a recipe.** Observability is the gateway's job via the v1.2 plugin bridges; recipes surface `trace_id` and stop there.
+- **Do not embed LangSmith / Langfuse / observability vendor SDKs in a recipe.** Observability is the gateway's job via its observability plugins (`langsmith`, `langfuse`, `phoenix`); recipes surface `trace_id` and stop there.
 
 ---
 
 ## Related Repositories
 
-- [`ai-gateway`](https://github.com/ferro-labs/ai-gateway) — the gateway (Go core, v1.1.0 OTel-native)
+- [`ai-gateway`](https://github.com/ferro-labs/ai-gateway) — the gateway (Go core, OTel-native, v1.4.x)
 - [`ai-gateway-examples`](https://github.com/ferro-labs/ai-gateway-examples) — raw Go examples
 - [`ferrolabs-python-sdk`](https://github.com/ferro-labs/ferrolabs-python-sdk) — Python SDK + `integrations/` framework adapters
 - [`ferrolabs-typescript-sdk`](https://github.com/ferro-labs/ferrolabs-typescript-sdk) — TypeScript SDK

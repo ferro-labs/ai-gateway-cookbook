@@ -13,7 +13,7 @@
 services:
   gateway:
     # Defaults to the newest gateway. Pin a release for reproducibility with
-    # GATEWAY_VERSION (e.g. GATEWAY_VERSION=1.1.1 in .env or inline).
+    # GATEWAY_VERSION (e.g. GATEWAY_VERSION=1.4.1 in .env or inline).
     image: ghcr.io/ferro-labs/ai-gateway:${GATEWAY_VERSION:-latest}
     environment:
       # Provider keys live on the gateway side. The gateway auto-detects
