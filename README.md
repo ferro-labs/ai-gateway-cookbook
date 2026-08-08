@@ -20,7 +20,7 @@ The official cookbook for [Ferro Labs AI Gateway](https://github.com/ferro-labs/
 
 Use this repo when you want a working example, not just an API snippet. Each recipe is self-contained, Dockerized, and shaped around a real integration such as LangGraph, LangChain, LlamaIndex, CrewAI, Vercel AI SDK, Mastra, DSPy, evals, or guardrails.
 
-Recipes are validated against **ai-gateway v1.4.1** (`ghcr.io/ferro-labs/ai-gateway:1.4.1`), `ferrolabsai` 0.2.1, `langchain-ferrolabsai` 0.1.0, and `@ferro-labs-ai/sdk` 0.2.0.
+Recipes are validated against **ai-gateway v1.4.1**, `ferrolabsai` 0.2.1, `langchain-ferrolabsai` 0.1.0, and `@ferro-labs-ai/sdk` 0.2.0. `make run` pulls the gateway's `latest` tag by default so an evaluation sees the newest release — set `GATEWAY_VERSION=1.4.1` to reproduce the validated stack exactly.
 
 ---
 
@@ -128,7 +128,7 @@ Each recipe ships with the same file shape:
 | File | Purpose |
 |---|---|
 | `README.md` | What the recipe demonstrates, prerequisites, how to run, and what to look for. |
-| `docker-compose.yml` | Starts the pinned gateway image + the recipe together (the one-command experience). |
+| `docker-compose.yml` | Starts the published gateway image + the recipe together (the one-command experience). |
 | `Dockerfile` | Self-contained recipe runtime image. |
 | `Makefile` | Standard `make run`, `make test`, `make down`, `make clean`, `make logs` targets. |
 | `.env.example` | Every env var: gateway-facing (`FERRO_BASE_URL`, `MASTER_KEY`) and the provider keys the bundled gateway needs. |

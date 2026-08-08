@@ -5,7 +5,8 @@
 #   cp .env.example .env   # fill in MASTER_KEY + the three provider keys
 #   docker compose up
 #
-# The gateway is its PUBLISHED, PINNED image — no gateway source is vendored.
+# The gateway is its PUBLISHED image (`latest` unless GATEWAY_VERSION pins it)
+# — no gateway source is vendored.
 # Provider keys go into the gateway container only; the recipe never sees them.
 
 services:

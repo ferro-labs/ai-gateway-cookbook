@@ -5,8 +5,8 @@
 #   cp .env.example .env   # fill in provider keys + MASTER_KEY
 #   docker compose up
 #
-# The gateway is consumed as its PUBLISHED, PINNED image — the cookbook never
-# vendors gateway source. Provider keys are injected into the *gateway*
+# The gateway is consumed as its PUBLISHED image — the cookbook never vendors
+# gateway source. The tag is `latest` unless GATEWAY_VERSION pins it. Provider keys are injected into the *gateway*
 # container only; the recipe container never sees them (it only knows
 # FERRO_BASE_URL + FERRO_API_KEY).
 
